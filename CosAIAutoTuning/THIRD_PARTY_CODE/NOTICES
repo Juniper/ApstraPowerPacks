@@ -3,19 +3,24 @@ NOTICES FOR THIRD-PARTY CODE/DEPENDENCIES
 Name: Apstra API Python
 Project URL: https://github.com/Apstra/apstra-api-python
 License: https://github.com/Apstra/apstra-api-python/blob/main/LICENSE
+License Type: Apache License 2.0
 
 Name: pysnow
 Project URL: https://pysnow.readthedocs.io
 License: https://pysnow.readthedocs.io/en/latest/general.html#license
+License Type: MIT License
 
 Name: python_terraform
 Project URL: https://github.com/beelit94/python-terraform
 License: https://github.com/beelit94/python-terraform/blob/develop/LICENSE.txt
+License Type: MIT License
 
 Name: PyYAML
 Project URL: https://pyyaml.org/
 License: https://github.com/yaml/pyyaml/blob/main/LICENSE
+License Type: MIT License
 
 Name: urllib3
 Project URL: https://github.com/urllib3/urllib3
 License: https://github.com/urllib3/urllib3/blob/main/LICENSE.txt
+License Type: MIT License
