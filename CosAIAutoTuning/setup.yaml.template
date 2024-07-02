@@ -1,0 +1,29 @@
+#Apstra Access
+apstra:
+  aos_ip:                                       #Apstra Host
+  aos_pass:                                     #Apstra Password
+  aos_port:                                     #Apstra Port
+  aos_user:                                     #Apstra User
+  blueprint_name:                               #Apstra Blueprint Name
+  drop_probe_name: Interface_Queue_Counter      #Interface Queue Drop Probe Name
+  ecn_probe_name: ECN Anomalies                 #ECN Marked Packets Probe Name
+  pfc_probe_name: PFC Anomalies                 #PFC Marked Packets Probe Name
+initial:
+  drop_probability_high: 100                    #Probability of ECN packet when the queue depth percentage is higher than the high fill level
+  drop_probability_low: 0                       #Probability of ECN packet when the queue depth percentage is lower than the low fill level
+  fill_level_high: 100                          #High fill level percentage for queue depth
+  fill_level_low: 90                            #Low fill level percentage for queue depth
+  high_limit: 90                                #The high fill level will not be allowed to cross this
+  low_limit: 0                                  #The low fill level will not be allowed to cross this
+snow:
+  instance: devxxxxx                            #Service Now Instance
+  monitor_ticket_id:                            #Incident Ticket to update. If none is provided a new one will be created
+  password:                                     #Service Now Password
+  user:                                         #Service Now Username. Account needs to have permissions to create and edit tickets
+wait_time_seconds: 20                           #Time between checks
+window_left_shift_quantum_high: 10              #How much will the low fill level be moved when not in edge detection mode
+window_left_shift_quantum_low: 5                #How much will the low fill level be moved when in edge detection mode
+window_right_shift_quantum_high: 10             #How much will the high fill level be moved when not in edge detection mode
+window_right_shift_quantum_low: 5               #How much will the high fill level be moved when in edge detection mode
+reset_edge_detection_time_seconds: 60           #Timeout after which the system will reset to original values or stop
+stop_on_reset:True                              #If the reset edge timeout is reached, stop the script

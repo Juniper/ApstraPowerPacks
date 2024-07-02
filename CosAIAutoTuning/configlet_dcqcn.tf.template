@@ -1,0 +1,218 @@
+#
+# DCQCN configlet
+#
+# https://www.juniper.net/documentation/us/en/software/junos/traffic-mgmt-qfx/topics/topic-map/cos-qfx-series-DCQCN.html
+#
+# For more information on shared buffers for mostly lossless fabric:
+# https://www.juniper.net/documentation/us/en/software/junos/traffic-mgmt-qfx/topics/example/cos-shared-buffer-allocation-lossless-qfx-series-configuring.html
+#
+# Note that on QFX5220/5230 the lossless shared buffer percentage for ingress and egress must match. We default to 80% here.
+#
+
+locals {
+  auto_commit = "$auto_commit"
+  dcqcn_leaf = <<-EOT
+class-of-service {
+    classifiers {
+        dscp mydscp {
+            forwarding-class CNP {
+                loss-priority low code-points 110000;
+            }
+            forwarding-class NO-LOSS {
+                loss-priority low code-points 011010;
+            }
+        }
+    }
+    drop-profiles {
+        dp1 {
+            interpolate {
+                            fill-level [ $fill_low $fill_high ];
+                            drop-probability [ $drop_probability_low $drop_probability_high ];
+                        }
+        }
+    }
+    shared-buffer {
+        ingress {
+            buffer-partition lossless {
+                percent 80;
+            }
+            buffer-partition lossless-headroom {
+                percent 10;
+            }
+            buffer-partition lossy {
+                percent 10;
+            }
+        }
+        egress {
+            buffer-partition lossless {
+                percent 80;
+            }
+            buffer-partition lossy {
+                percent 10;
+            }
+        }
+    }
+    forwarding-classes {
+        class CNP queue-num 3;
+        class NO-LOSS queue-num 4 no-loss pfc-priority 3;
+    }
+    congestion-notification-profile {
+        cnp {
+            input {
+                dscp {
+                    code-point 011010 {
+                        pfc;
+                    }
+                }
+            }
+            output {
+                ieee-802.1 {
+                    code-point 011 {
+                        flow-control-queue 4;
+                    }
+                }
+            }
+        }
+    }
+    interfaces {
+        et-* {
+            congestion-notification-profile cnp;
+            scheduler-map sm1;
+            unit * {
+                classifiers {
+                    dscp mydscp;
+                }
+            }
+        }
+    }
+    scheduler-maps {
+        sm1 {
+            forwarding-class CNP scheduler s2-cnp;
+            forwarding-class NO-LOSS scheduler s1;
+        }
+    }
+    schedulers {
+        s1 {
+            drop-profile-map loss-priority any protocol any drop-profile dp1;
+            explicit-congestion-notification;
+        }
+        s2-cnp {
+            transmit-rate percent 5;
+            priority strict-high;
+        }
+    }
+}
+EOT
+  dcqcn_spine = <<-EOT
+class-of-service {
+    classifiers {
+        dscp mydscp {
+            forwarding-class CNP {
+                loss-priority low code-points 110000;
+            }
+            forwarding-class NO-LOSS {
+                loss-priority low code-points 011010;
+            }
+        }
+    }
+    drop-profiles {
+        dp1 {
+            interpolate {
+               fill-level [ $fill_low $fill_high ];
+               drop-probability [ $drop_probability_low $drop_probability_high ];
+            }
+        }
+    }
+    forwarding-classes {
+        class CNP queue-num 3;
+        class NO-LOSS queue-num 4 no-loss pfc-priority 3;
+    }
+    congestion-notification-profile {
+        cnp {
+            input {
+                pfc-account ac1 {
+                    pfc-priority 3;
+                }
+                dscp {
+                    code-point 011010 {
+                        pfc;
+                        pfc-account-name ac1;
+                    }
+                }
+            }
+            output {
+                ieee-802.1 {
+                    code-point 011 {
+                        flow-control-queue 4;
+                    }
+                }
+            }
+        }
+    }
+    interfaces {
+        et-* {
+            congestion-notification-profile cnp;
+            scheduler-map sm1;
+            unit * {
+                classifiers {
+                    dscp mydscp;
+                }
+            }
+        }
+    }
+    scheduler-maps {
+        sm1 {
+            forwarding-class CNP scheduler s2-cnp;
+            forwarding-class NO-LOSS scheduler s1;
+        }
+    }
+    schedulers {
+        s1 {
+            drop-profile-map loss-priority any protocol any drop-profile dp1;
+            explicit-congestion-notification;
+        }
+        s2-cnp {
+            transmit-rate percent 5;
+            priority strict-high;
+        }
+    }
+}
+EOT
+}
+
+resource "apstra_datacenter_configlet" "dcqcn_configlet_leaf" {
+  blueprint_id = data.apstra_datacenter_blueprint.bp.id
+  condition = "role in [\"spine\",\"leaf\"]"
+  name = "DCQCN for All "
+  generators = [
+    {
+      config_style  = "junos"
+      section       = "top_level_hierarchical"
+      template_text = local.dcqcn_leaf
+    }
+  ]
+}
+
+#resource "apstra_datacenter_configlet" "dcqcn_configlet_spine" {
+#  blueprint_id = data.apstra_datacenter_blueprint.bp.id
+#  condition = "role in [\"spine\"]"
+#  name = "DCQCN for spines"
+#  generators = [
+#    {
+#      config_style  = "junos"
+#      section       = "top_level_hierarchical"
+#      template_text = local.dcqcn_spine
+#    }
+#  ]
+#}
+
+
+data "apstra_datacenter_blueprint" "bp" {
+ name = "$bp_name"
+}
+
+resource "apstra_blueprint_deployment" "bpd" {
+  count = local.auto_commit == "True"?1:0
+  blueprint_id = data.apstra_datacenter_blueprint.bp.id
+  comment = "Change made by the AI DCQCN Tuner."
+}
