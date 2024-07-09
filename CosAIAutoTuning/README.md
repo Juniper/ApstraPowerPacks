@@ -23,6 +23,8 @@ This project uses Apstra to monitor the network and deploy changes into the netw
 4. python ecn_monitor.py
 5. To reset the automation: python ecn_monitor.py --restore-original
 
+## ToDo
+1. Containerize
 
 
 
