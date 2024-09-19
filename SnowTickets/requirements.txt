@@ -1,0 +1,4 @@
+apstra_api_python==0.2.1
+pysnow==0.7.17
+PyYAML==6.0.1
+urllib3==1.25.11
