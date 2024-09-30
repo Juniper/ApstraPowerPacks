@@ -67,7 +67,7 @@ def get_anomalies(bp_id):
 
 
 def pretty_print_anomaly(ano):
-    s = "Error Type : %s\n" % (ano.pop('anomaly_type'))
+    s = "Error Type : %s\n" % (ano.get('anomaly_type'))
     role = ano.get('role')
     if role:
         s = "%s \n Role : %s" % (s, role)
@@ -117,8 +117,7 @@ def monitor_loop():
                 # continue
 
                 if not tickets.get(a['id']):
-                    s = pretty_print_anomaly(a)
-                    tick_id = make_ticket(a['id'], s)
+                    tick_id = make_ticket(a['id'], a)
                     tickets[a['id']] = {'tick_id': tick_id, 'bp_name': bp, 'bp_id': bp_id}
                 else:
                     print("Ticket for anomaly already exists : %s" % (tickets[a['id']]))
@@ -152,13 +151,14 @@ def make_ticket(a_id, desc):
 
     # print("making ticket")
     # print(a_id, desc)
+    s = pretty_print_anomaly(desc)
     response = incident.create(payload={
-        'short_description': 'Apstra Network Anomaly',
+        'short_description': f'Apstra Network Anomaly - {str(desc.get("anomaly_type")).title()} Error ',
         'caller_id': setup['snow']['caller_id']
     })
     tick_id = response.all()[0]['number']['value']
     # print(tick_id)
-    incident.update({'number': tick_id}, {'work_notes': desc})
+    incident.update({'number': tick_id}, {'work_notes': s})
     return tick_id
 
 
