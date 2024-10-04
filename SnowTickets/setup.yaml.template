@@ -1,14 +1,12 @@
 #Apstra Access
 apstra:
   aos_ip:                                       #Apstra Host
-  aos_pass:                                     #Apstra Password
   aos_port:                                     #Apstra Port
   aos_user:                                     #Apstra User
   blueprint_name:                               #Apstra Blueprint Name
 snow:
   instance: devxxxxx                            #Service Now Instance
   monitor_ticket_id:                            #Incident Ticket to update. If none is provided a new one will be created
-  password:                                     #Service Now Password
   user:                                         #Service Now Username. Account needs to have permissions to create and edit tickets
 wait_time_seconds: 20                           #Time between checks
 tickets_property_set: tickets                   #Property Set for tickets

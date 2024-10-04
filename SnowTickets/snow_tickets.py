@@ -1,3 +1,4 @@
+import os
 import time
 from pathlib import Path
 
@@ -54,7 +55,7 @@ def get_apstra_client():
     aos_ip = setup['apstra']['aos_ip']
     aos_port = setup['apstra']['aos_port']
     aos_user = setup['apstra']['aos_user']
-    aos_pw = setup['apstra']['aos_pass']
+    aos_pw = os.environ.get('APSTRA_PASS')
     aos_client = AosClient(protocol="https", host=aos_ip, port=aos_port)
     aos_client.auth.login(aos_user, aos_pw)
     return aos_client
@@ -92,8 +93,10 @@ def get_control():
     ps = aos.design.property_sets.get_property_set(ps_name=ps_manager)
     if ps.get('values'):
         bps = ps['values'].get("blueprints")
+        bp_ids = ps['values'].get("blueprint_ids")
         if bps:
-            return ps['values'].get('pause'), bps.split(",")
+            return ps['values'].get('pause'),  [aos.blueprint.get_id_by_name(b.strip()).id for b in bps.split(",")]
+        return ps['values'].get('pause'), bp_ids
     return False, []
 
 
@@ -108,8 +111,8 @@ def monitor_loop():
             time.sleep(setup['wait_time_seconds'])
             continue
 
-        for bp in bps:
-            bp_id = aos.blueprint.get_id_by_name(bp.strip()).id
+        for bp_id in bps:
+            bp = aos.blueprint.get_bp(bp_id.strip())['label']
             ano = get_anomalies(bp_id)
             print(len(ano))
             for a in ano:
@@ -164,7 +167,7 @@ def make_ticket(a_id, desc):
 
 load_setup()
 aos = get_apstra_client()
-snow = pysnow.Client(instance=setup['snow']['instance'], user=setup['snow']['user'], password=setup['snow']['password'])
+snow = pysnow.Client(instance=setup['snow']['instance'], user=setup['snow']['user'], password=os.environ.get('SNOW_PASS'))
 ps_manager = setup['management_property_set']
 ps_tickets = setup['tickets_property_set']
 
