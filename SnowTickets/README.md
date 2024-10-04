@@ -27,8 +27,4 @@ Service Now is a popular platform to report problems. This automation tracks the
 - 2.4 start the python script 
    % python snow_tickets.py
 
-## ToDo
-1. Containerize
-
-
 
