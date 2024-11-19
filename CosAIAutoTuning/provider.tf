@@ -2,14 +2,12 @@ terraform {
   required_providers {
     apstra = {
       source = "Juniper/apstra"
-      version = "0.53.0"
     }
   }
 }
 
 provider "apstra" {
-  url = "https://$user:$passwd@$ip:$port/"
-  tls_validation_disabled = true
+  tls_validation_disabled = false
   blueprint_mutex_enabled = false
   experimental = true
 }

@@ -1,9 +1,5 @@
 #Apstra Access
 apstra:
-  aos_ip:                                       #Apstra Host
-  aos_pass:                                     #Apstra Password
-  aos_port:                                     #Apstra Port
-  aos_user:                                     #Apstra User
   blueprint_name:                               #Apstra Blueprint Name
   drop_probe_name: Interface_Queue_Counter      #Interface Queue Drop Probe Name
   ecn_probe_name: ECN Anomalies                 #ECN Marked Packets Probe Name
@@ -18,7 +14,6 @@ initial:
 snow:
   instance: devxxxxx                            #Service Now Instance
   monitor_ticket_id:                            #Incident Ticket to update. If none is provided a new one will be created
-  password:                                     #Service Now Password
   user:                                         #Service Now Username. Account needs to have permissions to create and edit tickets
 wait_time_seconds: 20                           #Time between checks
 window_left_shift_quantum_high: 10              #How much will the low fill level be moved when not in edge detection mode

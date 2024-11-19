@@ -6,6 +6,6 @@ COPY ./snow_tickets.py .
 COPY ./requirements.txt .
 
 RUN pip install -r requirements.txt
-
-CMD ["python", "snow_tickets.py"]
+#RUN pip install pip-system-certs --use-feature=truststore
+CMD ["python3", "snow_tickets.py"]
 

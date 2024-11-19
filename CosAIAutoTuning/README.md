@@ -17,11 +17,14 @@ This project uses Apstra to monitor the network and deploy changes into the netw
 - Cloud Field Day Presentation https://www.youtube.com/watch?v=87LYgLSr5Js
 
 ## Usage
+
 1. pip3 install -r ./requirements.txt
 2. copy setup.yaml.template to setup.yaml. Fill in the values as appropriate
-3. python ecn_monitor.py --init
-4. python ecn_monitor.py
-5. To reset the automation: python ecn_monitor.py --restore-original
+3. Fill out apstra_snow_setup.sh
+4. % source apstra_snow_setup.sh
+5. % python ecn_monitor.py --init 
+6. % python ecn_monitor.py 
+7. To reset the automation: python ecn_monitor.py --restore-original
 
 ## ToDo
 1. Containerize
