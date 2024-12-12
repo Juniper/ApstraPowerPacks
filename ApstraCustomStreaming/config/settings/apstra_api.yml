@@ -1,0 +1,7 @@
+apstra_api:
+  base_url: ""
+  poll_interval: 60  # in seconds
+  blueprint_id: ""
+  ssl_verify: false
+  endpoints:
+    tasks: "/api/tasks"  # Adjust this to actual Apstra tasks endpoint

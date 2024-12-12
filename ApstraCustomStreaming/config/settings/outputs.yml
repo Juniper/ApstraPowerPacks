@@ -1,0 +1,18 @@
+outputs:
+  syslog:
+    enabled: true
+    server: ""
+    port: 1300
+    protocol: "udp"
+    facility: "local0"
+
+  webhook:
+    enabled: true
+    webhook_url: https://webhook.example.com/endpoint
+
+  # snmp:    <---does not exist yes
+  #   enabled: false
+  #   host: "localhost"
+  #   port: 162
+  #   community: "public"
+  #   trap_oid: "1.3.6.1.4.1.999999"  # Replace with actual OID

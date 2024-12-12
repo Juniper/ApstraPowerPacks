@@ -1,0 +1,9 @@
+redis:
+  host: localhost
+  port: 6379
+  channel: new_event_channel
+  database: 0
+  password: null  # Set if needed
+  ssl: false
+  timeout: 30
+  max_entries: 1500

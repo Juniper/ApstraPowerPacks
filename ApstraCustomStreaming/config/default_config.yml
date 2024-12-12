@@ -1,0 +1,49 @@
+# Apstra API Configuration
+api:
+  base_url: ""  # Set via APSTRA_API_URL env var
+  auth_token: "" # Set via APSTRA_AUTH_TOKEN env var
+  poll_interval: 60  # seconds
+  endpoints:
+    tasks: "/api/tasks"  # Adjust this to actual Apstra tasks endpoint
+
+# Redis Configuration
+redis:
+  host: "localhost"
+  port: 6379
+  max_entries: 1500
+  channel: "new_event_channel"  # Added for pub/sub communications
+
+# Output Configuration
+outputs:
+  syslog:
+    enabled: true
+    syslog:
+      server: "192.168.0.16"
+      port: 1300
+      protocol: "udp"
+      facility: "local0"
+    redis:
+      host: "localhost"
+      port: 6379
+      channel: "new_event_channel"
+
+  # snmp:
+  #   enabled: false
+  #   host: "localhost"
+  #   port: 162
+  #   community: "public"
+  #   trap_oid: "1.3.6.1.4.1.999999"  # Replace with actual OID
+
+  webhook:
+      enabled: true
+      webhook_url: "https://webhook-test.com/2df0f55ad3fc2550f6a931a9fae2648f"
+      redis:
+        host: "localhost" 
+        port: 6379
+        channel: "new_event_channel"
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "apstra_task_audit.log"  # Optional file logging
