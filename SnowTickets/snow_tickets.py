@@ -48,6 +48,13 @@ class SNOWPowerPack(PowerPackBase):
         self.close_tickets(t1)
         self.save_tickets_ps(self.tickets)
 
+    # Get pause value
+    def get_pause(self):
+        ps = self.aos_client.design.property_sets.get_property_set(ps_name=self.ps_manager)
+        if ps.get('values'):
+            return ps['values'].get('pause') and str(ps['values'].get('pause')).upper() == "TRUE"
+        return False
+
     # Save Tickets into the Property Set
     def save_tickets_ps(self, ticks):
         data = []
@@ -119,13 +126,6 @@ class SNOWPowerPack(PowerPackBase):
         if expected and actual:
             s = "%s \nExpected : %s \nActual : %s \n " % (s, expected, actual)
         return s
-
-    # Get pause value
-    def get_pause(self):
-        ps = self.aos_client.design.property_sets.get_property_set(ps_name=self.ps_manager)
-        if ps.get('values'):
-            return ps['values'].get('pause') and str(ps['values'].get('pause')).upper() == "TRUE"
-        return False
 
     def get_bp_ids(self):
         ps = self.aos_client.design.property_sets.get_property_set(ps_name=self.ps_manager)

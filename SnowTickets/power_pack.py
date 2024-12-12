@@ -29,7 +29,6 @@ class PowerPackBase:
     # This will be the main loop that will be run.
     def worker_loop(self):
         while not self.exit.is_set():
-            self.go.is_set()
             self.go.wait()
             self._worker_callback()
             time.sleep(self.setup['wait_time_seconds'])
@@ -41,6 +40,8 @@ class PowerPackBase:
     # This will be used to check if we need to pause the main loop
     def pause_check_loop(self):
         while not self.exit.is_set():
+            print("checking pause")
+            print(threading.get_ident())
             #Check condition and decide if we are going to clear.
             if self._checker_callback():
                 print("Pause Set, Pausing")
@@ -50,12 +51,16 @@ class PowerPackBase:
             time.sleep(self.setup['wait_time_seconds'])
         print("Exiting Pause Check Loop.")
 
-    def start_threads(self, blocking=True):
+    def start_threads(self, blocking=True, pause_check=True):
         print ("starting threads")
         self._worker = threading.Thread(target=self.worker_loop)
-        self._pause_checker = threading.Thread(target=self.pause_check_loop)
         self._worker.start()
-        self._pause_checker.start()
+
+        if pause_check:
+            print("pause check enabled, start pause checker")
+            self._pause_checker = threading.Thread(target=self.pause_check_loop)
+            self._pause_checker.start()
+
         if blocking:
             self._worker.join()
 
