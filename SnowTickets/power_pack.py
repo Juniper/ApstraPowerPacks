@@ -24,20 +24,24 @@ class PowerPackBase:
         self.go.set()
         self.load_setup()
         self.get_apstra_client()
-        signal(SIGINT, self.break_handler)
+    #    signal(SIGINT, self.break_handler)
 
     # This will be the main loop that will be run.
     def worker_loop(self):
         while not self.exit.is_set():
+            self.go.is_set()
             self.go.wait()
             self._worker_callback()
             time.sleep(self.setup['wait_time_seconds'])
+            print("working")
+            print(threading.get_ident())
+
         print("Exiting Worker Loop.")
 
     # This will be used to check if we need to pause the main loop
     def pause_check_loop(self):
         while not self.exit.is_set():
-            # Check condition and decide if we are going to clear.
+            #Check condition and decide if we are going to clear.
             if self._checker_callback():
                 print("Pause Set, Pausing")
                 self.go.clear()
@@ -46,7 +50,8 @@ class PowerPackBase:
             time.sleep(self.setup['wait_time_seconds'])
         print("Exiting Pause Check Loop.")
 
-    def start(self, blocking=True):
+    def start_threads(self, blocking=True):
+        print ("starting threads")
         self._worker = threading.Thread(target=self.worker_loop)
         self._pause_checker = threading.Thread(target=self.pause_check_loop)
         self._worker.start()
@@ -73,8 +78,10 @@ class PowerPackBase:
 
     def pause(self):
         self.go.clear()
+        print(self.go.is_set())
 
     def unpause(self):
+        print( "In unpause")
         self.go.set()
 
     def stop(self):
@@ -82,3 +89,6 @@ class PowerPackBase:
 
     def break_handler(self, signal_received, frame):
         self.stop()
+
+    def is_paused(self):
+        return not self.go.is_set()

@@ -1,10 +1,9 @@
 import os
-import pprint
 
 import pysnow
 from aos.aos import AosAPIError
+
 from power_pack import PowerPackBase
-from signal import signal, SIGINT
 
 
 class SNOWPowerPack(PowerPackBase):
@@ -25,17 +24,21 @@ class SNOWPowerPack(PowerPackBase):
         self.bp_ids = self.get_bp_ids()
 
     def worker(self):
-        pprint.pprint (self.tickets)
+        # pprint.pprint (self.tickets)
         t1 = self.tickets.copy()
-
         for bp_id in self.bp_ids:
             bp = self.aos_client.blueprint.get_bp(bp_id.strip())['label']
             ano = self.get_anomalies(bp_id)
-            print(len(ano))
+            # print(len(ano))
             for a in ano:
                 if not self.tickets.get(a['id']):
-                    tick_id = self.make_ticket(self.devices[a['identity']['system_id']], a)
-                    self.tickets[a['id']] = {'tick_id': tick_id, 'bp_name': bp, 'bp_id': bp_id}
+                    tick_id, sys_id = self.make_ticket(self.devices[a['identity']['system_id']], a)
+                    self.tickets[a['id']] = {'tick_id': tick_id, 'bp_name': bp, 'bp_id': bp_id,
+                                             'sys_id': sys_id,
+                                             'link': f"{self.snow.base_url}/nav_to.do?uri=incident.do?sys_id={sys_id}",
+                                             'anomaly_id': a['id'],
+                                             'bp_link': f"{self.aos_client.rest.base_url}/#/blueprints/{bp_id}/active/anomalies"
+                                             }
                 else:
                     print("Ticket for anomaly already exists : %s" % (self.tickets[a['id']]))
                     t1.pop(a['id'], None)
@@ -155,9 +158,11 @@ class SNOWPowerPack(PowerPackBase):
             'cmdb_ci': ci_id
         })
         tick_id = response.all()[0]['number']['value']
+        sys_id = response.all()[0]['sys_id']['value']
         # print(tick_id)
         self.incident.update({'number': tick_id}, {'work_notes': s})
-        return tick_id
+
+        return tick_id, sys_id
 
     def make_managed_device_cis(self):
         devs = self.aos_client.rest.json_resp_get(uri="api/systems/")['items']
@@ -180,6 +185,7 @@ class SNOWPowerPack(PowerPackBase):
 
         return devices
 
+
 if __name__ == '__main__':
     pp = SNOWPowerPack()
-    pp.start()
+    pp.start_threads(blocking=True)
