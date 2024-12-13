@@ -2,6 +2,7 @@ FROM python:3.10.15
 
 WORKDIR /SnowApp
 
+COPY ./power_pack.py .
 COPY ./snow_tickets.py .
 COPY ./requirements.txt .
 
