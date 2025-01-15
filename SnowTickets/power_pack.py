@@ -81,6 +81,10 @@ class PowerPackBase:
         self.aos_client = AosClient(protocol="https", host=aos_ip, port=int(aos_port), session=session)
         self.aos_client.auth.login(aos_user, aos_pw)
 
+    def update_setup(self, setup):
+        for key in setup.keys():
+            self.setup[key] = setup[key]
+
     def pause(self):
         self.go.clear()
         print(self.go.is_set())

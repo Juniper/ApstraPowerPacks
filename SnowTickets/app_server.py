@@ -1,9 +1,15 @@
-from flask import Flask
+from flask import Flask, render_template
 
 from snow_tickets import SNOWPowerPack
 
-app = Flask(__name__)
+app = Flask(__name__,static_url_path='',
+            static_folder='./snow-apstra-app/build',
+            template_folder='./snow-apstra-app/build')
 pp = SNOWPowerPack()
+
+@app.route("/")
+def hello():
+    return render_template("index.html")
 
 
 @app.after_request
@@ -12,20 +18,20 @@ def add_header(response):
     return response
 
 
-@app.route('/get_bps')
+@app.route('/bps')
 def get_bps():
     return pp.bp_ids
 
 
-@app.route('/get_tickets')
+@app.route('/tickets')
 def get_tickets():
     print(pp.tickets.values())
     return list(pp.tickets.values())
 
 
 @app.route('/status')
-def is_paused():
-    return {"paused": pp.is_paused()}
+def status():
+    return {"running": not pp.is_paused()}
 
 
 @app.route('/pause', methods=['POST'])
