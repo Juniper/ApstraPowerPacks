@@ -20,9 +20,8 @@ This PowerPack can be run either as a python application or as a docker containe
 - Setting up Property Set in Apstra with Terraform
     - % terraform init&&terraform apply
     - This will set up a Property Set called Ticket Manager with all the blueprints in the environment.
-    - Inspect the Property Set and ensure that only the blueprints you want to track are in the list
-      (OR)
-- Setting up  Property Set in Apstra manually
+    - Inspect the Property Set and ensure that only the blueprints you want to track are in the list   
+ - Setting up  Property Set in Apstra manually
     - Set up the management Property Set in Apstra with appropriate values
     ![img.png](img.png)
 
