@@ -5,9 +5,4 @@ snow:
 wait_time_seconds: 20                           #Time between checks
 tickets_property_set: tickets                   #Property Set for tickets
 management_property_set: Ticket Manager         #Property Set to manage this automation
-                                                #These are the
-                                                #{
-                                                #    'blueprints': #Comma separated list of blueprint names to be monitored
-                                                #    'pause': #true or false. automation pauses if true
-                                                #}
 
