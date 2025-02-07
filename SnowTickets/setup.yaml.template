@@ -1,9 +1,3 @@
-#Apstra Access
-apstra:
-  aos_ip:                                       #Apstra Host
-  aos_port:                                     #Apstra Port
-  aos_user:                                     #Apstra User
-  blueprint_name:                               #Apstra Blueprint Name
 snow:
   instance: devxxxxx                            #Service Now Instance
   monitor_ticket_id:                            #Incident Ticket to update. If none is provided a new one will be created

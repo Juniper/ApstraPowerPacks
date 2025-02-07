@@ -30,7 +30,7 @@ Service Now is a popular platform to report problems. This automation tracks the
 - Export the APSTRA_PASS and SNOW_PASS passwords
 - % docker build .  
   - At the end of this commend, you will get the id of the image that just got built use it in the next step
-- docker run  -v $PWD/setup.yaml:/SnowApp/setup.yaml -e APSTRA_PASS=$APSTRA_PASS -e SNOW_PASS=$SNOW_PASS <docker image id from previous step>
+- docker run  -v $PWD/setup.yaml:/SnowApp/setup.yaml -e APSTRA_PASS=$APSTRA_PASS -e SNOW_PASS=$SNOW_PASS -e APSTRA_URL=$APSTRA_URL -e APSTRA_USER=$APSTRA_USER -e APSTRA_PORT=$APSTRA_PORT  <docker image id from previous step>
 
 3. Run PowerPack from Commandline
 - % pip3 install -r ./requirements.txt
