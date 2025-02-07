@@ -17,7 +17,8 @@ This PowerPack can be run either as a python application or as a docker containe
 - copy setup.yaml.template to setup.yaml. Fill in the values as appropriate
 - Apstra needs to have a Property Set that is used to manage the power pack. 
 - This can be auto-created with Terraform or manually in the UI
-   1.1. Setting up Apstra with Terraform
+- 
+    1.1. Setting up Apstra with Terraform
     - % terraform init&&terraform apply
     - This will set up a Property Set called Ticket Manager with all the blueprints in the environment.
     - Inspect the Property Set and ensure that only the blueprints you want to track are in the list
