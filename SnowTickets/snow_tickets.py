@@ -1,8 +1,6 @@
+import logging
 import os
-
 import pysnow
-from aos.aos import AosAPIError
-
 from power_pack import PowerPackBase
 
 
@@ -21,14 +19,14 @@ class SNOWPowerPack(PowerPackBase):
         self.incident.parameters.display_value = "all"
         self.load_tickets_ps()
         self.load_devices_ps()
-        self.bp_ids = self.get_bp_ids()
+        self.bp_ids = self.aos_client.get_bp_ids()
 
     def worker(self):
         # pprint.pprint (self.tickets)
         t1 = self.tickets.copy()
         for bp_id in self.bp_ids:
-            bp = self.aos_client.blueprint.get_bp(bp_id.strip())['label']
-            ano = self.get_anomalies(bp_id)
+            bp = self.aos_client.get_blueprint(bp_id.strip())['label']
+            ano = self.aos_client.get_anomalies(bp_id)
             # print(len(ano))
             for a in ano:
                 if not self.tickets.get(a['id']):
@@ -93,19 +91,15 @@ class SNOWPowerPack(PowerPackBase):
     # Load Tickets from Property Set
     def load_tickets_ps(self):
         try:
-            ps = self.aos_client.design.property_sets.get_property_set(ps_name=self.ps_tickets)
-        except AosAPIError:
+            ps = self.aos_client.get_property_set(ps_name=self.ps_tickets)
+        except Exception as e:
+            logging.exception(e)
             ps = self.aos_client.design.property_sets.add_property_set(
                 [{'label': self.ps_tickets, 'values': {'tickets_info': []}}])
         ticks = ps.get("values").get("tickets_info")
         for t in ticks:
             self.tickets[t['anomaly_id']] = t
         return
-
-    # Get all anomalies
-    def get_anomalies(self, bp_id):
-        ano = self.aos_client.rest.json_resp_get("api/blueprints/" + bp_id + "/anomalies")
-        return ano['items']
 
     def pretty_print_anomaly(self, ano):
         s = "Error Type : %s\n" % (ano.get('anomaly_type'))

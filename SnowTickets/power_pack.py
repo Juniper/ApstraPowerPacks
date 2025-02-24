@@ -6,14 +6,14 @@ import time
 import requests
 import urllib3
 import yaml
-from aos.client import AosClient
-from signal import signal, SIGINT
+from apstra_client import ApstraClient
+
 
 class PowerPackBase:
     def __init__(self, worker_callback, checker_callback, setup_file="setup.yaml"):
         self.setup = {}
         self.setup_file = setup_file
-        self.aos_client = None
+        self.aos_client = self.get_apstra_client()
         self.exit = threading.Event()
         self.go = threading.Event()
         self._worker = threading.Thread
@@ -23,7 +23,7 @@ class PowerPackBase:
         self.exit.clear()
         self.go.set()
         self.load_setup()
-        self.get_apstra_client()
+
     #    signal(SIGINT, self.break_handler)
 
     # This will be the main loop that will be run.
@@ -76,10 +76,7 @@ class PowerPackBase:
         aos_port = os.environ.get('APSTRA_PORT')
         aos_user = os.environ.get('APSTRA_USER')
         aos_pw = os.environ.get('APSTRA_PASS')
-        session = requests.Session()
-        session.verify = True
-        self.aos_client = AosClient(protocol="https", host=aos_ip, port=int(aos_port), session=session)
-        self.aos_client.auth.login(aos_user, aos_pw)
+        return ApstraClient( base_url=aos_ip, port=int(aos_port), username=aos_user, password=aos_pw, ssl_verify=False)
 
     def pause(self):
         self.go.clear()
