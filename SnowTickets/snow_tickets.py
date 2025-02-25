@@ -19,13 +19,13 @@ class SNOWPowerPack(PowerPackBase):
         self.incident.parameters.display_value = "all"
         self.load_tickets_ps()
         self.load_devices_ps()
-        self.bp_ids = self.aos_client.get_bp_ids()
+        self.bp_ids = self.get_bp_ids()
 
     def worker(self):
         # pprint.pprint (self.tickets)
         t1 = self.tickets.copy()
         for bp_id in self.bp_ids:
-            bp = self.aos_client.get_blueprint(bp_id.strip())['label']
+            bp = self.aos_client.get_bp(bp_id.strip())['label']
             ano = self.aos_client.get_anomalies(bp_id)
             # print(len(ano))
             for a in ano:
@@ -35,7 +35,7 @@ class SNOWPowerPack(PowerPackBase):
                                              'sys_id': sys_id,
                                              'link': f"{self.snow.base_url}/nav_to.do?uri=incident.do?sys_id={sys_id}",
                                              'anomaly_id': a['id'],
-                                             'bp_link': f"{self.aos_client.rest.base_url}/#/blueprints/{bp_id}/active/anomalies"
+                                             'bp_link': f"{self.aos_client.base_url}/#/blueprints/{bp_id}/active/anomalies"
                                              }
                 else:
                     print("Ticket for anomaly already exists : %s" % (self.tickets[a['id']]))
@@ -48,7 +48,7 @@ class SNOWPowerPack(PowerPackBase):
 
     # Get pause value
     def get_pause(self):
-        ps = self.aos_client.design.property_sets.get_property_set(ps_name=self.ps_manager)
+        ps = self.aos_client.get_property_set(self.ps_manager)
         if ps.get('values'):
             return ps['values'].get('pause') and str(ps['values'].get('pause')).upper() == "TRUE"
         return False
@@ -60,30 +60,31 @@ class SNOWPowerPack(PowerPackBase):
             data.append(ticks[t] | {'anomaly_id': t})
         values = {'tickets_info': data}
         try:
-            ps = self.aos_client.design.property_sets.get_property_set(ps_name=self.ps_tickets)
-            self.aos_client.rest.patch(uri=f"/api/property-sets/{ps['id']}",
-                                       data={'label': self.ps_tickets, 'values': values})
-        except AosAPIError:
-            self.aos_client.design.property_sets.add_property_set([{'label': self.ps_tickets, 'values': values}])
+            ps = self.aos_client.get_property_set(self.ps_tickets)
+            self.aos_client.update_property_set(ps['id'],
+                                       {'label': self.ps_tickets, 'values': values})
+        except Exception:
+            self.aos_client.make_property_set({'label': self.ps_tickets, 'values': values})
         return
 
     # Find (or create) property set for the device CIS
     def save_devices_ps(self, devs):
         values = {'device_sys_ids': devs}
         try:
-            ps = self.aos_client.design.property_sets.get_property_set(ps_name=self.ps_devices)
-            self.aos_client.rest.put(uri=f"/api/property-sets/{ps['id']}",
-                                     data={'label': self.ps_devices, 'values': values})
-        except AosAPIError:
-            self.aos_client.design.property_sets.add_property_set([{'label': self.ps_devices, 'values': values}])
+            ps = self.aos_client.get_property_set(self.ps_devices)
+            self.aos_client.update_property_set(ps['id'],{'label': self.ps_devices, 'values': values})
+        except Exception as e:
+            logging.exception(e)
+            self.aos_client.add_property_set([{'label': self.ps_devices, 'values': values}])
         return
 
     # Check if there's a property set for device CIS. If none exists, go get CIs (or make them) in ServiceNow
     def load_devices_ps(self):
         try:
-            ps = self.aos_client.design.property_sets.get_property_set(ps_name=self.ps_devices)
+            ps = self.aos_client.get_property_set(self.ps_devices)
             self.devices = ps.get("values").get("devices_info")
-        except AosAPIError:
+        except Exception as e:
+            logging.exception(e)
             self.devices = self.make_managed_device_cis()
             self.aos_client.design.property_sets.add_property_set(
                 [{'label': self.ps_devices, 'values': {'devices_info': self.devices}}])
@@ -91,11 +92,11 @@ class SNOWPowerPack(PowerPackBase):
     # Load Tickets from Property Set
     def load_tickets_ps(self):
         try:
-            ps = self.aos_client.get_property_set(ps_name=self.ps_tickets)
+            ps = self.aos_client.get_property_set(self.ps_tickets)
         except Exception as e:
             logging.exception(e)
-            ps = self.aos_client.design.property_sets.add_property_set(
-                [{'label': self.ps_tickets, 'values': {'tickets_info': []}}])
+            ps = self.aos_client.make_property_set(
+                {'label': self.ps_tickets, 'values': {'tickets_info': []}})
         ticks = ps.get("values").get("tickets_info")
         for t in ticks:
             self.tickets[t['anomaly_id']] = t
@@ -122,7 +123,7 @@ class SNOWPowerPack(PowerPackBase):
         return s
 
     def get_bp_ids(self):
-        ps = self.aos_client.design.property_sets.get_property_set(ps_name=self.ps_manager)
+        ps = self.aos_client.get_property_set(self.ps_manager)
         if ps.get('values'):
             bps = ps['values'].get("blueprints")
             if bps:
@@ -159,7 +160,7 @@ class SNOWPowerPack(PowerPackBase):
         return tick_id, sys_id
 
     def make_managed_device_cis(self):
-        devs = self.aos_client.rest.json_resp_get(uri="api/systems/")['items']
+        devs = self.aos_client.make_api_request("GET", "/api/systems/")['items']
         cmdb = self.snow.resource(api_path='/table/cmdb_ci')
 
         devices = {}
