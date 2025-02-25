@@ -72,11 +72,11 @@ class PowerPackBase:
     # Set up the apstra client
     def get_apstra_client(self):
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-        aos_ip = os.environ.get('APSTRA_URL')git
+        aos_ip = os.environ.get('APSTRA_URL')
         aos_port = os.environ.get('APSTRA_PORT')
         aos_user = os.environ.get('APSTRA_USER')
         aos_pw = os.environ.get('APSTRA_PASS')
-        return ApstraClient( base_url=aos_ip, port=int(aos_port), username=aos_user, password=aos_pw, ssl_verify=False)
+        return ApstraClient( base_url=aos_ip, port=int(aos_port), username=aos_user, password=aos_pw, ssl_verify=True)
 
     def pause(self):
         self.go.clear()
