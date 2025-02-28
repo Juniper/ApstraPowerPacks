@@ -23,6 +23,11 @@ data "apstra_blueprints" "d" {
     payload = jsonencode({
       pause = false
       blueprint_ids = data.apstra_blueprints.d.ids
+      ignore_anomalies=  [],      #List of Anomalies to Ignore
+      ignore_devices= [],         #List of device hostnames to ignore
+      include_only_anomalies= [], #List of anomalies to include, all others will be ignored
+      include_only_devices= [],   #List of devices to include, all others will be ignored
+      include_only_severity: [],  #List of severities to include, all others will be ignored
     })
   }
 resource "apstra_property_set" "ps" {

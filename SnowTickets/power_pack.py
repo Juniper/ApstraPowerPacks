@@ -6,14 +6,14 @@ import time
 import requests
 import urllib3
 import yaml
-from aos.client import AosClient
-from signal import signal, SIGINT
+from apstra_client import ApstraClient
+
 
 class PowerPackBase:
     def __init__(self, worker_callback, checker_callback, setup_file="setup.yaml"):
         self.setup = {}
         self.setup_file = setup_file
-        self.aos_client = None
+        self.aos_client = self.get_apstra_client()
         self.exit = threading.Event()
         self.go = threading.Event()
         self._worker = threading.Thread
@@ -23,7 +23,7 @@ class PowerPackBase:
         self.exit.clear()
         self.go.set()
         self.load_setup()
-        self.get_apstra_client()
+
     #    signal(SIGINT, self.break_handler)
 
     # This will be the main loop that will be run.
@@ -32,16 +32,16 @@ class PowerPackBase:
             self.go.wait()
             self._worker_callback()
             time.sleep(self.setup['wait_time_seconds'])
-            print("working")
-            print(threading.get_ident())
+            #print("working")
+            #print(threading.get_ident())
 
         print("Exiting Worker Loop.")
 
     # This will be used to check if we need to pause the main loop
     def pause_check_loop(self):
         while not self.exit.is_set():
-            print("checking pause")
-            print(threading.get_ident())
+            #print("checking pause")
+            #print(threading.get_ident())
             #Check condition and decide if we are going to clear.
             if self._checker_callback():
                 print("Pause Set, Pausing")
@@ -72,21 +72,18 @@ class PowerPackBase:
     # Set up the apstra client
     def get_apstra_client(self):
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-        aos_ip = os.environ.get('APSTRA_URL').split("https://")[1]
+        aos_ip = os.environ.get('APSTRA_URL')
         aos_port = os.environ.get('APSTRA_PORT')
         aos_user = os.environ.get('APSTRA_USER')
         aos_pw = os.environ.get('APSTRA_PASS')
-        session = requests.Session()
-        session.verify = True
-        self.aos_client = AosClient(protocol="https", host=aos_ip, port=int(aos_port), session=session)
-        self.aos_client.auth.login(aos_user, aos_pw)
+        return ApstraClient( base_url=aos_ip, port=int(aos_port), username=aos_user, password=aos_pw, ssl_verify=True)
 
     def pause(self):
         self.go.clear()
-        print(self.go.is_set())
+        #print(self.go.is_set())
 
     def unpause(self):
-        print( "In unpause")
+        #print( "In unpause")
         self.go.set()
 
     def stop(self):
