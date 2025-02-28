@@ -24,7 +24,13 @@ This PowerPack can be run either as a python application or as a docker containe
  - Setting up  Property Set in Apstra manually
     - Set up the management Property Set in Apstra with appropriate values
     ![img.png](img.png)
-
+    -  ignore_anomalies - List of Anomalies to Ignore
+       ignore_devices - List of device hostnames to ignore
+       include_only_anomalies - List of anomalies to include, all others will be ignored
+       include_only_devices - List of devices to include, all others will be ignored
+       include_only_severity -List of severities to include, all others will be ignored
+    - Leaving all of these as empty lists will result in all anomalies on all devices being reported
+   
 2. Run PowerPack with Docker 
 - % docker build .  
   - At the end of this commend, you will get the id of the image that just got built use it in the next step
