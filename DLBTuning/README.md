@@ -1,6 +1,9 @@
-# Snow Tickets
-Apstra Anomalies provide an easy way to observe problems in the network fabric.
-Service Now is a popular platform to report problems. This automation tracks the fabric and opens tickets in Service Now if there are problems.
+# DLB Tuner
+
+The Dynamic Load Balancing (DLB) functionality provides for an improvement over static load balancing.
+However, the inactivity timer needs to be tuned to the load. If this is too small, you will have packets being delivered out of sequence.
+
+This automation provides a way to adjust the inactivity timer interval based on the occurrence of out of sequence packets.
 
 This PowerPack can be run either as a python application or as a docker container. The steps are documented below.
 
