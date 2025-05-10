@@ -125,7 +125,7 @@ class SNOWPowerPack(PowerPackBase):
             ps = self.aos_client.get_property_set(self.ps_devices)
             self.devices_ci_map = ps.get("values").get("devices_info")
         except Exception as e:
-            logging.exception(e)
+            logging.debug("devices property set not found ")
             self.devices_ci_map = self.make_managed_device_cis()
             self.aos_client.make_property_set(
                 {'label': self.ps_devices, 'values': {'devices_info': self.devices_ci_map}})

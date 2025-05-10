@@ -1,0 +1,17 @@
+NOTICES FOR THIRD-PARTY CODE/DEPENDENCIES
+
+Name: Requests
+Project URL: https://docs.python-requests.org/en/latest/index.html
+License: https://github.com/psf/requests/blob/main/LICENSE
+License Type: Apache 2.0 License
+
+
+Name: PyYAML
+Project URL: https://pyyaml.org/
+License: https://github.com/yaml/pyyaml/blob/main/LICENSE
+License Type: MIT License
+
+Name: urllib3
+Project URL: https://github.com/urllib3/urllib3
+License: https://github.com/urllib3/urllib3/blob/main/LICENSE.txt
+License Type: MIT License
