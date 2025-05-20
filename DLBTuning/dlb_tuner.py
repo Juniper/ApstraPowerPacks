@@ -16,9 +16,9 @@ class DLBTunerPack(PowerPackBase):
         inactivity_interval = policy['dlb_options']['flowlet_options']['inactivity_interval']
         print(f"Current Inactivity Interval {inactivity_interval}")
         policy['dlb_options']['flowlet_options']['inactivity_interval'] = inactivity_interval + delta
-        self.aos_client.update_load_balancing_policy(bp_id, policy['id'], policy)
+        self.aos_client.update_load_balancing_policy(self.bp_id, policy['id'], policy)
         self.aos_client.deploy_blueprint(self.bp_id,
-                                         f"OOS Packets seen {self.oos_packets}. Updating inactivity timer to {inactivity_interval + delta}")
+            f"OOS Packets seen {self.oos_packets}. Updating inactivity timer to {inactivity_interval + delta}")
 
     def worker(self):
         # Get pause value
@@ -36,10 +36,6 @@ class DLBTunerPack(PowerPackBase):
             print(f"More OOS than before {self.old_oos}<{oos_packets}")
             delta = self.inactivity_timer_delta
 
-        # if old_oos > oos_packets:
-        #     #More OOS packets than before
-        #     print (f"Less OOS than before {old_oos}>{oos_packets}")
-        #     delta = -25
 
         if delta != 0:
             print(f"updating dlb inactivity interval by {delta}")

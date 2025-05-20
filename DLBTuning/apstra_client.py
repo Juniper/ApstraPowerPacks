@@ -208,7 +208,7 @@ class ApstraClient:
         anos = self.get_anomalies(bp_id)
         oos = []
         for a in anos:
-            pprint.pprint(a)
+            #pprint.pprint(a)
             #print(a['identity']['stage_name'])
             if a['identity'].get('stage_name') == "Is Out of Sequence Packets Detected?":
                 oos.append(a)
