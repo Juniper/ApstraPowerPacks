@@ -1,11 +1,13 @@
 FROM python:3.10.15
 
 WORKDIR /SnowApp
-COPY ./apstra_client.py .
-COPY ./power_pack.py .
-COPY ./snow_tickets.py .
-COPY ./requirements.txt .
+COPY apstra/apstra_client.py .
+COPY power_pack/power_pack.py .
+COPY SnowTickets/snow_tickets.py .
+COPY SnowTickets/app_server.py .
+COPY SnowTickets/requirements.txt .
 
 RUN pip install -r requirements.txt
-CMD ["python3", "snow_tickets.py"]
+EXPOSE 5000
+CMD ["python3", "app_server.py"]
 
