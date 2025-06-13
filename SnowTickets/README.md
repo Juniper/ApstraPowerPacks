@@ -32,7 +32,8 @@ This PowerPack can be run either as a python application or as a docker containe
     - Leaving all of these as empty lists will result in all anomalies on all devices being reported
    
 2. Run PowerPack with Docker 
-- % docker build .  
+- Navigate to root directory
+- % docker build -f ./SnowTickets/Dockerfile .   
   - At the end of this commend, you will get the id of the image that just got built use it in the next step
 - docker run  -v $PWD/setup.yaml:/SnowApp/setup.yaml -e APSTRA_PASS=$APSTRA_PASS -e SNOW_PASS=$SNOW_PASS -e APSTRA_URL=$APSTRA_URL -e APSTRA_USER=$APSTRA_USER -e APSTRA_PORT=$APSTRA_PORT  <docker image id from previous step>&
 

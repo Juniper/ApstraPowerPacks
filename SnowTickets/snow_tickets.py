@@ -2,7 +2,9 @@ import logging
 import os
 
 import pysnow
+import sys
 
+sys.path.insert(1, "../PowerPackBase")
 from power_pack import PowerPackBase
 
 
