@@ -176,6 +176,15 @@ class ApstraClient:
             logger.exception(e)
             raise
 
+    def make_bp_configlet(self, bp_id, c):
+        ep = f"/api/blueprints/{bp_id}/configlets"
+        try:
+            self.make_api_request(method='POST', endpoint=ep, data=p)
+        except Exception as e:
+            logger.exception(e)
+            raise
+        return self.get_property_set(p['label'])
+
     def get_load_balancing_policy(self,bp_id, name):
         ep = f"/api/blueprints/{bp_id}/load-balancing-policies"
         try:
