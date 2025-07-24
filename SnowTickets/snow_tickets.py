@@ -96,7 +96,7 @@ class SNOWPowerPack(PowerPackBase):
 
         return False
 
-    # Save Tickets into the Property Set
+    # Saveq Tickets into the Property Set
     def save_tickets_ps(self, ticks):
         data = []
         for t in ticks.keys():
@@ -117,7 +117,6 @@ class SNOWPowerPack(PowerPackBase):
             ps = self.aos_client.get_property_set(self.ps_devices)
             self.aos_client.update_property_set(ps['id'], {'label': self.ps_devices, 'values': values})
         except Exception as e:
-            logging.exception(e)
             self.aos_client.add_property_set([{'label': self.ps_devices, 'values': values}])
         return
 
@@ -182,7 +181,7 @@ class SNOWPowerPack(PowerPackBase):
         #print(f"resolving ticket {t}")
         self.incident.update({'number': t}, {'work_notes': "Anomaly resolved in Apstra."})
         response = self.incident.update({'number': t},
-                                        {"close_code": "Resolved By Caller", "state": "6", "caller_id": "apstra_user",
+                                        {"close_code": "Resolved By Caller", "state": "6",
                                          "close_notes": "Closed by API"})
         # print(response)
 
@@ -193,7 +192,6 @@ class SNOWPowerPack(PowerPackBase):
 
         response = self.incident.create(payload={
             'short_description': f'Apstra Network Anomaly - {str(desc.get("anomaly_type")).title()} Error ',
-            'caller_id': self.setup['snow']['caller_id'],
             'cmdb_ci': ci_id
         })
 
