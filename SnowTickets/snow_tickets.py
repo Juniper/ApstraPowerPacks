@@ -1,8 +1,8 @@
 import logging
-import os
-
-import pysnow
+import pprint
 import sys
+
+from snow import SNOWClient
 
 sys.path.insert(1, "../PowerPackBase")
 from power_pack import PowerPackBase
@@ -15,20 +15,17 @@ class SNOWPowerPack(PowerPackBase):
         self.devices_ci_map = {}
         self.devices = {}
 
-        self.snow = pysnow.Client(instance=self.setup['snow']['instance'], user=self.setup['snow']['user'],
-                                  password=os.environ.get('SNOW_PASS'))
+        self.snow = SNOWClient()
         self.ps_manager = self.setup['management_property_set']
         self.ps_tickets = self.setup['tickets_property_set']
         self.ps_devices = self.setup['devices_property_set']
 
-        self.incident = self.snow.resource(api_path='/table/incident')
-        self.incident.parameters.display_value = "all"
         self.load_tickets_ps()
         self.dev_map = {}
+        self.bp_ids = self.get_bp_ids()
         self.make_devices_map()
         self.load_devices_ps()
 
-        self.bp_ids = self.get_bp_ids()
 
     def worker(self):
         # pprint.pprint (self.tickets)
@@ -42,10 +39,10 @@ class SNOWPowerPack(PowerPackBase):
                     #print("ignoring")
                     continue
                 if not self.tickets.get(a['id']):
-                    tick_id, sys_id = self.make_ticket(self.devices_ci_map[a['identity']['system_id']], a)
+                    tick_id, sys_id = self.snow.make_ticket(self.devices_ci_map[a['identity']['system_id']], a)
                     self.tickets[a['id']] = {'tick_id': tick_id, 'bp_name': bp, 'bp_id': bp_id,
                                              'sys_id': sys_id,
-                                             'link': f"{self.snow.base_url}/nav_to.do?uri=incident.do?sys_id={sys_id}",
+                                             'link': f"{self.snow.client.base_url}/nav_to.do?uri=incident.do?sys_id={sys_id}",
                                              'anomaly_id': a['id'],
                                              'bp_link': f"{self.aos_client.base_url}/#/blueprints/{bp_id}/active/anomalies"
                                              }
@@ -122,14 +119,7 @@ class SNOWPowerPack(PowerPackBase):
 
     # Check if there's a property set for device CIS. If none exists, go get CIs (or make them) in ServiceNow
     def load_devices_ps(self):
-        try:
-            ps = self.aos_client.get_property_set(self.ps_devices)
-            self.devices_ci_map = ps.get("values").get("devices_info")
-        except Exception as e:
-            logging.debug("devices property set not found ")
-            self.devices_ci_map = self.make_managed_device_cis()
-            self.aos_client.make_property_set(
-                {'label': self.ps_devices, 'values': {'devices_info': self.devices_ci_map}})
+        pass
 
     # Load Tickets from Property Set
     def load_tickets_ps(self):
@@ -144,26 +134,6 @@ class SNOWPowerPack(PowerPackBase):
             self.tickets[t['anomaly_id']] = t
         return
 
-    def pretty_print_anomaly(self, ano):
-        s = "Error Type : %s\n" % (ano.get('anomaly_type'))
-        role = ano.get('role')
-        if role:
-            s = "%s \n Role : %s" % (s, role)
-        s = "%s \n Severity : %s" % (s, ano['severity'])
-
-        expected = ano['expected'].get('value')
-        if not expected:
-            expected = ano['expected']
-
-        actual = ano['actual'].get('value')
-        if not actual:
-            actual = ano['actual']
-        for k in ano['identity'].keys():
-            s = "%s \n %s : %s " % (s, k, ano['identity'][k])
-        if expected and actual:
-            s = "%s \nExpected : %s \nActual : %s \n " % (s, expected, actual)
-        return s
-
     def get_bp_ids(self):
         ps = self.aos_client.get_property_set(self.ps_manager)
         if ps.get('values'):
@@ -175,52 +145,20 @@ class SNOWPowerPack(PowerPackBase):
 
     def close_tickets(self, tickets):
         for t in tickets.values():
-            self.resolve_ticket(t['tick_id'])
+            self.snow.resolve_ticket(t['tick_id'])
 
-    def resolve_ticket(self, t):
-        #print(f"resolving ticket {t}")
-        self.incident.update({'number': t}, {'work_notes': "Anomaly resolved in Apstra."})
-        response = self.incident.update({'number': t},
-                                        {"close_code": "Resolved By Caller", "state": "6",
-                                         "close_notes": "Closed by API"})
-        # print(response)
-
-    def make_ticket(self, ci_id, desc):
-        # print("making ticket")
-        # print(a_id, desc)
-        s = self.pretty_print_anomaly(desc)
-
-        response = self.incident.create(payload={
-            'short_description': f'Apstra Network Anomaly - {str(desc.get("anomaly_type")).title()} Error ',
-            'cmdb_ci': ci_id
-        })
-
-        tick_id = response.all()[0]['number']['value']
-        sys_id = response.all()[0]['sys_id']['value']
-        # print(tick_id)
-        self.incident.update({'number': tick_id}, {'work_notes': s})
-
-        return tick_id, sys_id
-
-    def make_managed_device_cis(self):
-        cmdb = self.snow.resource(api_path='/table/cmdb_ci')
-
+    def make_managed_device_cis(self, bp_sys_id):
         devs = {}
+        adapters = {}
         for d in self.dev_map:
             # pprint.pprint(d)
-            r = cmdb.get(query={'name': self.dev_map[d]['hostname']}, stream=True).first_or_none()
-            if r:
-                devs[d] = r['sys_id']
-            else:
-                payload = {'name': self.dev_map[d]['hostname'], "sys_class_name": "cmdb_ci_ip_switch",
-                           'ip_address': self.dev_map[d]['ip_address'], 'mac_address': self.dev_map[d]['mac_address'],
-                           'manufacturer': self.dev_map[d]['manufacturer'], 'model_number': self.dev_map[d]['model_number'],
-                           'serial_number': d}
+            devs[d]=self.snow.create_switch_ci_from_device(self.dev_map[d])
+            self.snow.attach_device_to_datacenter(bp_sys_id, devs[d])
+            for i in self.dev_map[d].get('interfaces'):
+                adapters[i['id']]=i['sys_id']
 
-                r = cmdb.create(payload=payload)
-                devs[d] = r.all()[0]['sys_id']
-
-        return devs
+        pprint.pprint(self.dev_map)
+        return devs, adapters
 
     def make_devices_map(self):
         devs = self.aos_client.make_api_request("GET", "/api/systems/")['items']
@@ -230,8 +168,30 @@ class SNOWPowerPack(PowerPackBase):
                 "ip_address": d["facts"]["mgmt_ipaddr"],
                 "mac_address": d["facts"]["mgmt_macaddr"],
                 "manufacturer": d["facts"]["vendor"],
-                "model_number": d["facts"]["hw_model"]
+                "model_number": d["facts"]["hw_model"],
+                "serial_number":d['facts']['serial_number'],
+                "interfaces":[]
             }
+        if_query = """match(node('system', name='system', deploy_mode='deploy', role=is_in(['leaf', 'spine','access'])).out('hosted_interfaces').node('interface', name='iface', if_name=not_none()).out('link').node('link', link_type='ethernet', name='link').in_('link').node('interface', name='remote_iface').in_('hosted_interfaces').node('system', role=is_in(['spine', 'access', 'superspine', 'leaf','generic_system']), deploy_mode='deploy', name='remote_system').ensure_different("system", "remote_system"))"""
+        for bp in self.bp_ids:
+            blueprint = self.aos_client.get_bp(bp)
+            bp_sys_id = self.snow.create_datacenter(blueprint)
+
+            interfaces = self.aos_client.make_graph_query(bp, if_query)
+            for i in interfaces:
+                self.dev_map[i['system']['system_id']]['interfaces'].append(i['iface'])
+
+            try:
+                ps = self.aos_client.get_property_set(self.ps_devices)
+                self.devices_ci_map = ps.get("values").get("devices_info")
+            except Exception as e:
+                logging.debug("devices property set not found ")
+                self.devices_ci_map, self.adapters_ci_map = self.make_managed_device_cis(bp_sys_id)
+                self.aos_client.make_property_set(
+                    {'label': self.ps_devices, 'values': {'devices_info': self.devices_ci_map}})
+                # Managed device CIs are made, now connect the interfaces
+                for i in interfaces:
+                    self.snow.create_adapter_relationship(self.adapters_ci_map[i['iface']['id']], self.adapters_ci_map[i['remote_iface']['id']])
 
 
 if __name__ == '__main__':

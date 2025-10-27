@@ -1,5 +1,10 @@
 export APSTRA_USER=admin
-export APSTRA_URL=https://apstra-d64e9b24-4062-4a7b-820d-ed932d698c13.aws.apstra.com
+export APSTRA_URL=https://apstra-d74aedfe-aa8c-4147-8817-aec3112f6fdf.aws.apstra.com/
 export APSTRA_PORT=443
-export APSTRA_PASS=SplendidSnipe3-
-export SNOW_PASS=qeREs^%A1mT5
+export APSTRA_PASS=SwiftMinnow3_
+export SNOW_USER=admin
+export SNOW_PASS=Xe0a%dUSV%r4
+export SNOW_CLIENT_ID=8354846ebd0f62102f89531f56d479f9  #os.environ.get('SNOW_CLIENT_ID')
+export SNOW_CLIENT_SECRET=juniper  #os.environ.get('SNOW_CLIENT_SECRET')
+export SNOW_INSTANCE_ID=dev275630  #os.environ.get('SNOW_INSTANCE_ID')
+export SNOW_TOKEN=

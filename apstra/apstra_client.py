@@ -223,3 +223,12 @@ class ApstraClient:
                 oos.append(a)
         return oos
 
+    def make_graph_query(self, bp_id, query ):
+        ep = f"/api/blueprints/{bp_id}/qe"
+
+        try:
+            r = self.make_api_request(method='POST', endpoint=ep, data={'query':query})
+        except Exception as e:
+            logger.exception(e)
+            raise
+        return r['items']
